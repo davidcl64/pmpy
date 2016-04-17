@@ -5,30 +5,22 @@ const async       = require('async');
 const consul      = require('consul');
 const vault       = require('node-vault');
 
-const NOOP        = () => {};
 const spawnOpts   = { stdio: ['ignore', process.stdout, process.stderr] };
 const scriptPath  = path.join(__dirname, '..', '..', '..', 'services');
 const builderNoOp = (yargs)  => yargs;
 const runScript   = (script) => (done) => {
-  done = done || NOOP;
-
-  spawn(path.join(scriptPath, script + '.sh'), [], spawnOpts)
+  spawn(path.join(scriptPath, `${script}.sh`), [], spawnOpts)
     .on('close', () => done());
 };
 
 const waitForLeader = (done) => {
   consul({}).status.leader((err,result) => {
-    if(err) { return done(err); }
-
-    if(result.length) { return done(); }
-
+    if(err || result.length) { return done(err); }
     setTimeout(waitForLeader.bind(null,done), 10);
   });
 };
 
-const initVault = (done) => {
-  vault({}).init({ secret_shares: 1, secret_threshold: 1 }, done);
-};
+const initVault = (done) => vault({}).init({ secret_shares: 1, secret_threshold: 1 }, done);
 
 const storeSecrets = (secrets, done) => {
   consul({}).kv.set({
@@ -38,34 +30,23 @@ const storeSecrets = (secrets, done) => {
 };
 
 const logSecrets   = (secrets, done) => {
-  done = done || NOOP;
-
-  console.log('export VAULT_UNSEAL_KEY=%s', secrets.keys[0]);
-  console.log('export VAULT_TOKEN=%s',      secrets.root_token);
+  console.log(`export VAULT_UNSEAL_KEY=${secrets.keys[0]}`);
+  console.log(`export VAULT_TOKEN=${secrets.root_token}`);
   console.log('# Run this command to configure your shell for vault:');
-  console.log("# eval $(pmpy playground env)");
+  console.log('# eval $(pmpy playground env)');
   console.log();
   process.nextTick(done.bind(null,null,secrets));
 };
 
-const unsealVault = (secrets, done) => {
-  const opts   = {token: secrets.root_token};
-
-  vault(opts).unseal({ secret_shares: 1, key: secrets.keys[0] }, done);
-};
+const unsealVault = (secrets, done) => vault({token: secrets.root_token}).unseal({ secret_shares: 1, key: secrets.keys[0] }, done);
 
 const getSecrets = (done) => {
   consul({}).kv.get({key: 'playground/secrets'}, (err, result) => {
-    if(err) { return console.dir(err); }
-
-    done(null, JSON.parse(result.Value));
+    done(err, err ? null : JSON.parse(result.Value));
   });
 };
 
-const sequence = (steps) => () => {
-  async.waterfall(steps, (err) => { if(err) { console.dir(err); } });
-};
-
+const sequence = (steps) => () => async.waterfall(steps, (err) => { if(err) { console.dir(err); } });
 
 const waitReadySequence = [waitForLeader, initVault, storeSecrets, logSecrets, unsealVault];
 const startSequence     = [runScript('start')].concat(waitReadySequence);
