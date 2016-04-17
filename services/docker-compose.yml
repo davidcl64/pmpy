@@ -1,0 +1,17 @@
+vault:
+  image: sjourdan/vault:latest
+  volumes:
+    - ./vault.hcl:/etc/vault.hcl
+  links:
+    - "consul:consul"
+  ports:
+    - 8200:8200
+  command: "server -config=/etc/vault.hcl"
+
+consul:
+  image: voxxit/consul:latest
+  ports: 
+    - 8500:8500
+  volumes:
+    - ./consul.json:/etc/consul.json
+  command: "agent -config-file=/etc/consul.json"
