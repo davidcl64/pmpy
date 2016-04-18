@@ -1,6 +1,6 @@
 'use strict';
-const consul      = require('../../../lib/consul');
-const util        = require('../../../lib/util');
+const consul  = require('../../../lib/consul');
+const util    = require('../../../lib/util');
 
 
 module.exports = exports = {
@@ -18,8 +18,8 @@ module.exports = exports = {
     return yargs;
   },
   handler:  (yargs) => {
-    util.json.read(yargs.value)
-      .flatMap(consul({prefix: yargs.prefix}).push)
+    util[yargs.format].read(yargs.value)
+      .flatMap(consul({ prefix: yargs.prefix }).push)
       .subscribe(
         (data) => console.dir(data),
         (err)  => console.log(err.stack)

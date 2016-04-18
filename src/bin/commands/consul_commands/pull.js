@@ -1,6 +1,6 @@
 'use strict';
-const consul      = require('../../../lib/consul');
-
+const consul  = require('../../../lib/consul');
+const util    = require('../../../lib/util');
 
 module.exports = exports = {
   command:  'pull',
@@ -10,7 +10,7 @@ module.exports = exports = {
     consul({ prefix: yargs.prefix })
       .pull('')
       .subscribe(
-        (conf) => console.log(JSON.stringify(conf,null,2)),
+        (conf) => util[yargs.format].print(conf),
         (err)  => console.log(err.stack)
       );
   }

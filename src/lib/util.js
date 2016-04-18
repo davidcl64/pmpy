@@ -5,6 +5,8 @@ const io        = require('./io');
 const read      = io.read;
 const rxJust    = rx.Observable.just;
 const rxPairs   = rx.Observable.pairs;
+const dotenv    = require('dotenv');
+const _         = require('lodash/fp');
 
 const jsonParse = (doc) => JSON.parse(doc);
 const readJSON  = (loc) => read(loc).map(jsonParse);
@@ -13,6 +15,13 @@ const flatten   = (doc) => flat(doc, {delimiter: '/'});
 const unflatten = (doc) => flat.unflatten(doc, {delimiter: '/'});
 const kvMap     = (doc) => rxJust(doc).map(flatten).flatMap(rxPairs).map(toKV);
 
+
+const envFlatten    = (doc) => flat(doc, {delimiter: '__'});
+const envUnflatten  = (doc) => flat.unflatten(doc, {delimiter: '__'});
+const envParseValue = _.mapValues((val) => JSON.parse(val));
+const envParse      = (doc) => dotenv.parse(doc);
+const readEnv       = (loc) => read(loc).map(envParse).map(envParseValue).map(envUnflatten);
+
 module.exports = exports = {
   _: {
     toKV: toKV
@@ -20,11 +29,14 @@ module.exports = exports = {
   
   json: {
     read:   readJSON,
-    parse:  jsonParse    
+    parse:  jsonParse,
+    print:  (doc) => console.log(JSON.stringify(doc,null,2))  
   },
   
   env: {
-      
+    read:   readEnv,
+    parse:  envParse,
+    print:  _.flow(envFlatten, _.toPairs, _.map((kv) => console.log("EXPORT %s='%s'", kv[0], JSON.stringify(kv[1]))))
   },
   
   flatten:    flatten,

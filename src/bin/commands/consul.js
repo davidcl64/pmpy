@@ -4,14 +4,23 @@ const pull  = require('./consul_commands/pull');
 
 const buildArgs = (yargs) => {
   return yargs
-    .options({'prefix': {
-      describe: 'prefix for key/value pairs in consul',
-      alias:    'p',
-      default:  'pmpy',
-      nargs:    1,
-      global:   true,
-      type:     'string'
-    }})
+    .options(
+      { 'prefix': {
+          describe: 'prefix for key/value pairs in consul',
+          alias:    'p',
+          default:  'pmpy',
+          nargs:    1,
+          global:   true,
+          type:     'string' },
+          
+        'format': {
+          describe: 'data format [json|env]',
+          alias:    'f',
+          default:  'json',
+          nargs:    1,
+          global:   true,
+          type:     'string' },          
+      })
     .command(push)
     .command(pull);
 };
