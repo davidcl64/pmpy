@@ -57,6 +57,8 @@ $ npm install --save pmpy
 
 ## Usage
 
+### Code
+
 ```js
 var consul = require('pmpy').consul;
 
@@ -69,11 +71,30 @@ consul({ prefix: 'myorg' })
   );
 ```
 
+### CLI
+
 ```sh
 $ npm install -g pmpy
 $ pmpy --help
 ```
 
+### Playground
+
+PMPY comes with a docker based playground for Consul and Vault.  You will need to install the Docker tools - including compose to use it.
+Once you have, the playground can be managed from the cli.
+
+```sh
+pmpy playground --help
+playground <action>
+
+Commands:
+  start    Start playground services
+  stop     Stop playground services
+  restart  Restart playground services
+  reset    Resets consul & vault without a full restart
+  env      Display vault keys
+
+```
 
 ## License
 
