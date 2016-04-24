@@ -53,7 +53,7 @@
     "load-grunt-tasks": "^3.1.0",
     "time-grunt": "^1.1.0"
   },
-  "engineStrict": true,
+  "engineStrict": false,
   "engines": {
     "node": ">=4.0.0"
   }
