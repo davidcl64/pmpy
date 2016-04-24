@@ -8,7 +8,7 @@ module.exports = exports = {
   builder:  (yargs) => yargs,
   handler:  (yargs) => {
     consul({ prefix: yargs.prefix })
-      .pull('')
+      .pull(yargs.path)
       .subscribe(
         (conf) => util[yargs.format].print(conf),
         (err)  => console.log(err.stack)
