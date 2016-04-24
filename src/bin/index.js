@@ -11,6 +11,7 @@ const argv = yargs
   .command(commands.playground)
   .command(commands.consul)
   .help()
+  .completion()
   .argv;
 
 
