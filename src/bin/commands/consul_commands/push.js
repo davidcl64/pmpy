@@ -21,8 +21,9 @@ module.exports = exports = {
     util[yargs.format].read(yargs.value)
       .flatMap(consul({ prefix: yargs.prefix }).push.bind(null, yargs.path))
       .subscribe(
-        (data) => console.dir(data),
-        (err)  => console.log(err.stack)
+        (data) => console.log('key: %s, value: %s', data.key, data.value),
+        (err)  => console.log(err.stack),
+        ()     => console.log('Done!')
       );
   }
 };
