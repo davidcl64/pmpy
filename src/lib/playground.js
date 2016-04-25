@@ -5,7 +5,7 @@ const async       = require('async');
 const consul      = require('consul');
 const vault       = require('node-vault');
 
-const logIfError  = (err)    => { if(err) { console.dir(err); } }
+const logIfError  = (err)    => { if(err) { console.dir(err); } };
 const errorOnly   = (done)   => (err) => done(err);
 const spawnOpts   = { stdio: ['ignore', process.stdout, process.stderr] };
 const scriptDir   = path.join(__dirname, '..', '..', 'services');
@@ -18,7 +18,7 @@ const runScript   = (script) => (done) => spawnScript(script).on('close', script
 const getLeader   = (wait)   => (done) => setTimeout(() => consul({}).status.leader(done), wait);
 const hasNoLeader = (leader) => (leader || '').length === 0;
 const awaitLeader = (done)   => async.doWhilst(getLeader(200), hasNoLeader, errorOnly(done));
-
+const status      = getLeader(0);
 const initVault   = (done) => vault({}).init({ secret_shares: 1, secret_threshold: 1 }, done);
 
 const storeSecrets = (secrets, done) => {
@@ -40,7 +40,9 @@ const logSecrets    = (secrets, done) => {
   process.nextTick(done.bind(null,null,secrets));
 };
 
-const sequence          = (steps) => (done) => async.waterfall(steps, done || logIfError);
+// Since the resulting sequence is used directly from the cli, yargs will pass itself in as the first param - do a 
+// quick typeof check and ignore 'done' if it isn't a function
+const sequence          = (steps) => (done) => { async.waterfall(steps, typeof done === 'function' ? done : logIfError); };
 const waitReadySequence = [awaitLeader, initVault, storeSecrets, logSecrets, unsealVault];
 const startSequence     = [runScript('start')].concat(waitReadySequence);
 const resetSequence     = [runScript('reset')].concat(waitReadySequence);
@@ -52,6 +54,7 @@ module.exports = exports = {
   env:          sequence(envSequence),
   reset:        sequence(resetSequence),
   restart:      sequence(restartSequence),
+  status:       status,
   start:        sequence(startSequence),
   stop:         sequence(stopSequence),
   vaultSecrets: sequence([vaultSecrets, parseSecrets])

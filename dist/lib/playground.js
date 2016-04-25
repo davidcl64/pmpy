@@ -51,7 +51,7 @@ var hasNoLeader = function hasNoLeader(leader) {
 var awaitLeader = function awaitLeader(done) {
   return async.doWhilst(getLeader(200), hasNoLeader, errorOnly(done));
 };
-
+var status = getLeader(0);
 var initVault = function initVault(done) {
   return vault({}).init({ secret_shares: 1, secret_threshold: 1 }, done);
 };
@@ -83,9 +83,11 @@ var logSecrets = function logSecrets(secrets, done) {
   process.nextTick(done.bind(null, null, secrets));
 };
 
+// Since the resulting sequence is used directly from the cli, yargs will pass itself in as the first param - do a
+// quick typeof check and ignore 'done' if it isn't a function
 var sequence = function sequence(steps) {
   return function (done) {
-    return async.waterfall(steps, done || logIfError);
+    async.waterfall(steps, typeof done === 'function' ? done : logIfError);
   };
 };
 var waitReadySequence = [awaitLeader, initVault, storeSecrets, logSecrets, unsealVault];
@@ -99,6 +101,7 @@ module.exports = exports = {
   env: sequence(envSequence),
   reset: sequence(resetSequence),
   restart: sequence(restartSequence),
+  status: status,
   start: sequence(startSequence),
   stop: sequence(stopSequence),
   vaultSecrets: sequence([vaultSecrets, parseSecrets])

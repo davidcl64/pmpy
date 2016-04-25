@@ -14,3 +14,5 @@ eval $(docker-machine env pmpy)
 
 docker-compose stop && docker-compose rm -f
 docker-machine stop pmpy
+
+echo "Playground is closed"

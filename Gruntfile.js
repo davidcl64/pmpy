@@ -63,7 +63,17 @@ module.exports = function (grunt) {
       }
     }
   });
+  
+  grunt.registerTask('startPlayground', function() {
+    var done = this.async();
+    var pg = require('./dist/lib/playground');
+    pg.status(function(err) {
+      if(err) { return pg.start(done); }
 
-  grunt.registerTask('default', ['jshint', 'mochacli']);
+      pg.reset(done);
+    });
+  });
+
+  grunt.registerTask('default', ['jshint', 'startPlayground', 'mochacli']);
   grunt.registerTask('build', ['babel','chmod']);
 };
