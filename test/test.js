@@ -109,8 +109,6 @@ describe('pmpy node module', function () {
         return _.find(kvPairs, {key: key});
       }
       
-      function kvVal(kv) { return tryParse(kv.value); }
-
       it('should push data into consul', function(done) {
         var data    = getFixture('consul_kv.json');
         consul.push('testKey', data)
@@ -119,10 +117,10 @@ describe('pmpy node module', function () {
           function(err) { expect(err).to.not.exist; },
           function() {
             expect(kvPairs).to.have.length(4);
-            expect(kvVal(getKv('unittest/testKey/one'         ))).to.equal(data.one);
-            expect(kvVal(getKv('unittest/testKey/two/one'     ))).to.equal(data.two.one);
-            expect(kvVal(getKv('unittest/testKey/two/two/one' ))).to.equal(data.two.two.one);
-            expect(kvVal(getKv('unittest/testKey/two/two/two' ))).to.equal(data.two.two.two);
+            expect(getKv('unittest/testKey/one'         ).value).to.equal(data.one);
+            expect(getKv('unittest/testKey/two/one'     ).value).to.equal(data.two.one);
+            expect(getKv('unittest/testKey/two/two/one' ).value).to.equal(data.two.two.one);
+            expect(getKv('unittest/testKey/two/two/two' ).value).to.equal(data.two.two.two);
             
             consulClient({}).kv.get({key: 'unittest/testKey', recurse: true}, function(err, result) {
               expect(err).to.not.exist;
