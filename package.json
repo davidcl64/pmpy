@@ -1,6 +1,6 @@
 {
   "name": "pmpy",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A push-me-pull-ya client for consule + vault",
   "author": {
     "name": "David J. Clarke",
