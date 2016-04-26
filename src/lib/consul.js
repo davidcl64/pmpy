@@ -10,12 +10,20 @@ const unPrefix    = (record) => Object.assign({}, record, {Key: rmPrefix(record.
 const parseValue  = (record) => Object.assign({}, record, {Value: tryParse(record.Value)});
 const consulToKV  = (record) => ({key: record.Key, value: record.Value});
 const flattenKV   = (accum, record) => { accum[record.key] = record.value; return accum; };
-const throwOnErr  = (err) => { if(err) { throw err; } };
 const obsFromArg0 = (arg) => rx.Observable.from(arg);
 
-const kvSet       = (consul) => (opts) => consul.kv.set(opts, throwOnErr);
+const kvSet       = (consul) => (opts) => rx.Observable.create((observer) => {
+  consul.kv.set(opts, (err) => {
+    if(err) { observer.onError(err); }
+    else {
+      observer.onNext(Object.assign({}, opts, {value: tryParse(opts.value)})); 
+    }
+    observer.onCompleted();
+  });
+});
+
 const kvGet       = (consul) => (opts) => rx.Observable.create((observer) => {
-  consul.kv.get(opts, function(err, result) {
+  consul.kv.get(opts, (err, result) => {
     if(err) { observer.onError(err); }
     else if(result && result.length) { 
       observer.onNext(_.map(_.merge({__prefix: opts.key}))(result)); 
@@ -35,6 +43,12 @@ const init = (opts) => {
   const kvSetOpts = (path)  => (kv) => ({key: `${fullPath(prefix)(path)}${kv.key}`, value: JSON.stringify(kv.value)});
   
   return {
+    _:    {                                 // Private stuff exposed for unit tests
+      client:     consul,
+      prefix:     prefix,
+      kvSetOpts:  kvSetOpts
+    },
+    
     pull: (path) => 
       rx.Observable.from(_.flatten([path])) // Ensure an array of paths
         .map(fullPath(prefix))              // Get the full path (prefix/path)
@@ -50,8 +64,22 @@ const init = (opts) => {
       rx.Observable.just(data)              // Start with a simple Object
         .flatMap(util.kvMap)                // Flatten to key/value pairs
         .map(kvSetOpts(path))               // Get consul opts => {key: prefix/path/key, value: val }
-        .do(kvSet(consul))                  // Fire off a set to consul 
+        .flatMap(kvSet(consul))             // Fire off a set to consul 
   };
 };
 
 module.exports = exports = init;
+
+// Not part of the public API - exposing for unit tests
+module.exports._ = {
+  rmPrefix:      rmPrefix,
+  unPrefix:      unPrefix,
+  parseValue:    parseValue,
+  consulToKV:    consulToKV,
+  flattenKV:     flattenKV,
+  obsFromArg0:   obsFromArg0,
+  kvSet:         kvSet,
+  kvGet:         kvGet,
+  pull:          pull,
+  fullPath:      fullPath
+};
