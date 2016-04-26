@@ -49,6 +49,11 @@ module.exports = function (grunt) {
       all: ['test/*.js']
     },
     watch: {
+      playground: {
+        options: { atBegin: true },
+        files: ['package.json'],
+        tasks: ['startPlayground', 'jshint:js', 'jshint:test', 'mochacli']
+      },
       gruntfile: {
         files: '<%= jshint.gruntfile.src %>',
         tasks: ['jshint:gruntfile']
