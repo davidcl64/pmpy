@@ -19,7 +19,7 @@ module.exports = exports = {
   },
   handler:  (yargs) => {
     util[yargs.format].read(yargs.value)
-      .flatMap(consul({ prefix: yargs.prefix }).push.bind(null, yargs.path))
+      .flatMap(consul(util.yargs.consulOpts(yargs)).push.bind(null, yargs.path))
       .subscribe(
         (data) => console.log('key: %s, value: %s', data.key, data.value),
         (err)  => console.log(err.stack),

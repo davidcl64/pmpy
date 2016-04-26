@@ -7,7 +7,7 @@ module.exports = exports = {
   describe: 'Read data from consul',
   builder:  (yargs) => yargs,
   handler:  (yargs) => {
-    consul({ prefix: yargs.prefix })
+    consul(util.yargs.consulOpts(yargs))
       .pull(yargs.path)
       .subscribe(
         (conf) => util[yargs.format].print(conf),

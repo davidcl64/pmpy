@@ -35,6 +35,10 @@ module.exports = exports = {
     toKV: toKV
   },
   
+  yargs: {
+    consulOpts: _.pick(['prefix', 'host', 'port', 'secure'])
+  },
+  
   json: {
     read:   readJSON,
     parse:  jsonParse,
