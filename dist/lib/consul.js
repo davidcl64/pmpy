@@ -21,20 +21,25 @@ var consulToKV = function consulToKV(record) {
 var flattenKV = function flattenKV(accum, record) {
   accum[record.key] = record.value;return accum;
 };
-var throwOnErr = function throwOnErr(err) {
-  if (err) {
-    throw err;
-  }
-};
 var obsFromArg0 = function obsFromArg0(arg) {
   return rx.Observable.from(arg);
 };
 
 var kvSet = function kvSet(consul) {
   return function (opts) {
-    return consul.kv.set(opts, throwOnErr);
+    return rx.Observable.create(function (observer) {
+      consul.kv.set(opts, function (err) {
+        if (err) {
+          observer.onError(err);
+        } else {
+          observer.onNext(Object.assign({}, opts, { value: tryParse(opts.value) }));
+        }
+        observer.onCompleted();
+      });
+    });
   };
 };
+
 var kvGet = function kvGet(consul) {
   return function (opts) {
     return rx.Observable.create(function (observer) {
@@ -73,6 +78,12 @@ var init = function init(opts) {
   };
 
   return {
+    _: { // Private stuff exposed for unit tests
+      client: consul,
+      prefix: prefix,
+      kvSetOpts: kvSetOpts
+    },
+
     pull: function pull(path) {
       return rx.Observable.from(_.flatten([path])) // Ensure an array of paths
       .map(fullPath(prefix)) // Get the full path (prefix/path)
@@ -89,9 +100,23 @@ var init = function init(opts) {
       return rx.Observable.just(data) // Start with a simple Object
       .flatMap(util.kvMap) // Flatten to key/value pairs
       .map(kvSetOpts(path)) // Get consul opts => {key: prefix/path/key, value: val }
-      .do(kvSet(consul));
+      .flatMap(kvSet(consul));
     } // Fire off a set to consul
   };
 };
 
 module.exports = exports = init;
+
+// Not part of the public API - exposing for unit tests
+module.exports._ = {
+  rmPrefix: rmPrefix,
+  unPrefix: unPrefix,
+  parseValue: parseValue,
+  consulToKV: consulToKV,
+  flattenKV: flattenKV,
+  obsFromArg0: obsFromArg0,
+  kvSet: kvSet,
+  kvGet: kvGet,
+  pull: _pull,
+  fullPath: fullPath
+};
