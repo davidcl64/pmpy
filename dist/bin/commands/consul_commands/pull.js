@@ -10,7 +10,7 @@ module.exports = exports = {
     return yargs;
   },
   handler: function handler(yargs) {
-    consul({ prefix: yargs.prefix }).pull(yargs.path).subscribe(function (conf) {
+    consul(util.yargs.consulOpts(yargs)).pull(yargs.path).subscribe(function (conf) {
       return util[yargs.format].print(conf);
     }, function (err) {
       return console.log(err.stack);

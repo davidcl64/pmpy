@@ -17,7 +17,7 @@ module.exports = exports = {
     return yargs;
   },
   handler: function handler(yargs) {
-    util[yargs.format].read(yargs.value).flatMap(consul({ prefix: yargs.prefix }).push.bind(null, yargs.path)).subscribe(function (data) {
+    util[yargs.format].read(yargs.value).flatMap(consul(util.yargs.consulOpts(yargs)).push.bind(null, yargs.path)).subscribe(function (data) {
       return console.log('key: %s, value: %s', data.key, data.value);
     }, function (err) {
       return console.log(err.stack);

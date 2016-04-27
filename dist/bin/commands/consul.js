@@ -26,7 +26,28 @@ var buildArgs = function buildArgs(yargs) {
       choices: ['json', 'env'],
       nargs: 1,
       global: true,
-      type: 'string' }
+      type: 'string' },
+
+    'host': {
+      describe: 'host name/address',
+      default: '127.0.0.1',
+      nargs: 1,
+      global: true,
+      type: 'string' },
+
+    'port': {
+      describe: 'consul HTTP(S) port',
+      default: 8500,
+      nargs: 1,
+      global: true,
+      type: 'number' },
+
+    'secure': {
+      describe: 'enable HTTPS',
+      default: false,
+      nargs: 1,
+      global: true,
+      type: 'boolean' }
   }).command(push).command(pull);
 };
 
