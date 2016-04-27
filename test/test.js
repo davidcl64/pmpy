@@ -3,7 +3,7 @@
 var chai          = require('chai');
 var expect        = chai.expect;
 var path          = require('path');
-var _             = require('lodash');
+var _             = require('lodash/fp');
 var pmpy          = require('../' + (process.env.PMPY_TARGET || 'src') + '/lib');
 var consulClient  = require('consul');
 var tryParse      = require('../' + (process.env.PMPY_TARGET || 'src') + '/lib').util.tryParse;
@@ -87,7 +87,7 @@ describe('pmpy node module', function () {
       });
       
       it('should have cleaned up "unittest"', function(done) {
-        consulClient({}).kv.get({key: 'unittest/', recurse: 'true'}, function(err,result) {
+        consulClient({}).kv.get({key: 'unittest', recurse: 'true'}, function(err,result) {
           expect(err).to.not.exist;
           expect(result).to.not.exist;
           done();
@@ -98,6 +98,7 @@ describe('pmpy node module', function () {
     describe('push', function() {
       var consul;
       var kvPairs;
+      var sortByKey = _.sortBy(['key']);
       
       before(function() {
         consul = pmpy.consul({ prefix: 'unittest' });
@@ -109,7 +110,7 @@ describe('pmpy node module', function () {
       });
       
       function getKv(key) {
-        return _.find(kvPairs, {key: key});
+        return _.find({key: key})(kvPairs);
       }
       
       it('should push data into consul', function(done) {
@@ -129,7 +130,7 @@ describe('pmpy node module', function () {
               expect(err).to.not.exist;
               
               var consulResult = result.map(function(r) { return {key: r.Key, value: tryParse(r.Value)}; });
-              expect(_.sortBy(consulResult, ['key'])).to.deep.equal(_.sortBy(kvPairs, ['key']));
+              expect(sortByKey(consulResult)).to.deep.equal(sortByKey(kvPairs));
               done();
             });
           }
@@ -153,7 +154,7 @@ describe('pmpy node module', function () {
               expect(err).to.not.exist;
               
               var consulResult = result.map(function(r) { return {key: r.Key, value: tryParse(r.Value)}; });
-              expect(_.sortBy(consulResult, ['key'])).to.deep.equal(_.sortBy(kvPairs, ['key']));
+              expect(sortByKey(consulResult)).to.deep.equal(sortByKey(kvPairs));
               done();
             });
           }
@@ -165,25 +166,27 @@ describe('pmpy node module', function () {
       var consul;
       
       before(function(done) {
+        var fixtures  = ['consul_kv_a.json', 'consul_kv_b.json', 'consul_kv_c.json', 'consul_kv_array.json'];
         var noop      = function() {};
-        var count     = 4;
+        var count     = fixtures.length;
         var complete  = function() {
           count--;
           if(!count) { done(); }
         };
+        var subscribe = _.tap(function(observable) { observable.subscribe(noop,done,complete); });
         
         consul = pmpy.consul({ prefix: 'unittest' });
-        consul.push('testKeyA',  getFixture('consul_kv_a.json')).subscribe(noop,done,complete);        
-        consul.push('testKeyB',  getFixture('consul_kv_b.json')).subscribe(noop,done,complete);        
-        consul.push('testKeyC',  getFixture('consul_kv_c.json')).subscribe(noop,done,complete);        
-        consul.push('testArray', getFixture('consul_kv_array.json')).subscribe(noop,done,complete);        
+        _.flow(
+          _.map(function(name) { return consul.push(name, getFixture(name)); }),
+          _.map(subscribe)
+        )(fixtures);
       });
       
       after(clean);
       
       it('should pull from consul', function(done) {
         var result, error;
-        consul.pull('testKeyA')
+        consul.pull('consul_kv_a.json')
           .subscribe(
             function(val) { result = val; },
             function(err) { error  = err; },
@@ -198,8 +201,8 @@ describe('pmpy node module', function () {
 
       it('should merge multiple trees together', function(done) {
         var result, error;
-        var expected = _.merge({}, getFixture('consul_kv_a.json'), getFixture('consul_kv_b.json'));
-        consul.pull(['testKeyA','testKeyB'])
+        var expected = _.flow(_.merge(getFixture('consul_kv_b.json')), _.merge(getFixture('consul_kv_a.json')))({});
+        consul.pull(['consul_kv_a.json','consul_kv_b.json'])
           .subscribe(
             function(val) { result = val; },
             function(err) { error  = err; },
@@ -215,7 +218,7 @@ describe('pmpy node module', function () {
       it('should pull arrays', function(done) {
         var result, error;
         var expected = getFixture('consul_kv_array.json');
-        consul.pull('testArray')
+        consul.pull('consul_kv_array.json')
           .subscribe(
             function(val) { result = val; },
             function(err) { error  = err; },
