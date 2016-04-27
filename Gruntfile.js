@@ -10,6 +10,7 @@ module.exports = function (grunt) {
       options: { mode: '+x' },
       bin:     { src: ['./dist/bin/index.js'] }
     },
+    
     babel : {
       options : {
         sourceMap : false,
@@ -25,6 +26,7 @@ module.exports = function (grunt) {
         }]
       }
     },
+    
     jshint: {
       options: {
         jshintrc: '.jshintrc',
@@ -40,6 +42,7 @@ module.exports = function (grunt) {
         src: ['test/**/*.js']
       }
     },
+    
     mochacli: {
       options: {
         reporter: 'spec',
@@ -48,6 +51,37 @@ module.exports = function (grunt) {
       },
       all: ['test/*.js']
     },
+    
+    mocha_istanbul: {
+      cover: {
+        src: ['test/test.js'],
+        options: {
+          mask: '*.js',
+          timeout: '15000',
+          ui: 'bdd',
+          reporter: 'spec'
+        }
+      },
+      coveralls: {
+        src: 'test',
+        options: {
+          coverage: true
+        }
+      }
+    },
+
+    clean: {
+      cover: {
+        src: [ 'coverage' ]
+      },
+      build: {
+        src: [ 'dist', 'coverage' ]
+      },
+      all: {
+        src: [ 'dist', 'coverage', 'node_modules/' ]
+      }
+    },
+        
     watch: {
       playground: {
         options: { atBegin: true },
@@ -79,6 +113,11 @@ module.exports = function (grunt) {
     });
   });
 
+  grunt.registerTask('cover', [
+    'clean:cover',
+    'mocha_istanbul:cover'
+  ]);
+  
   grunt.registerTask('default', ['jshint', 'startPlayground', 'mochacli']);
   grunt.registerTask('build', ['babel','chmod']);
 };

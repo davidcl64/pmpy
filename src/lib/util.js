@@ -7,9 +7,6 @@ const rxJust        = rx.Observable.just;
 const rxPairs       = rx.Observable.pairs;
 const dotenv        = require('dotenv');
 const _             = require('lodash/fp');
-const debug         = require('debug')('pmpy');
-
-const trace         = (label)  => (val) => debug('%s: %j', label, val);
 
 const jsonParse     = (doc) => JSON.parse(doc);
 const readJSON      = (loc) => read(loc).map(jsonParse);
@@ -51,7 +48,6 @@ module.exports = exports = {
     print:  _.flow(envFlatten, _.toPairs, _.map((kv) => console.log("EXPORT %s='%s'", kv[0], JSON.stringify(kv[1]))))
   },
   
-  trace:      trace,
   tryParse:   tryParse,
   flatten:    flatten,
   unflatten:  unflatten,
