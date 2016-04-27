@@ -10,9 +10,9 @@ var tryParse      = require('../' + (process.env.PMPY_TARGET || 'src') + '/lib')
 
 describe('pmpy node module', function () {
   /* jshint expr:true */
-  beforeEach(function(done) {
+  function clean(done) {
     consulClient({}).kv.del( {key: "unittest", recurse: true }, done);
-  });
+  }
   
   var fixturePath = path.join(__dirname, 'fixtures');
   function getFixture(name) {
@@ -33,6 +33,8 @@ describe('pmpy node module', function () {
         __prefix: 'unittest/',
         Key:      'unittest/expected/result'
       };
+      
+      beforeEach(clean);
       
       it('should remove a prefix from the beginning of a string', function() {
         expect(util.rmPrefix('prefix', 'prefixExpected')).to.equal('Expected');
@@ -101,6 +103,7 @@ describe('pmpy node module', function () {
         consul = pmpy.consul({ prefix: 'unittest' });
       });
       
+      beforeEach(clean);
       beforeEach(function() {
         kvPairs = [];
       });
@@ -110,7 +113,7 @@ describe('pmpy node module', function () {
       }
       
       it('should push data into consul', function(done) {
-        var data    = getFixture('consul_kv.json');
+        var data    = getFixture('consul_kv_a.json');
         consul.push('testKey', data)
         .subscribe(
           function(kv)  { kvPairs.push(kv); },
@@ -131,6 +134,98 @@ describe('pmpy node module', function () {
             });
           }
         );
+      });
+      
+      it('should support arrays', function(done) {
+        var data    = getFixture('consul_kv_array.json');
+        consul.push('testKey', data)
+        .subscribe(
+          function(kv)  { kvPairs.push(kv); },
+          function(err) { expect(err).to.not.exist; },
+          function() {
+            expect(kvPairs).to.have.length(4);
+            expect(getKv('unittest/testKey/one/0/name').value).to.equal(data.one[0].name);
+            expect(getKv('unittest/testKey/one/1/name').value).to.equal(data.one[1].name);
+            expect(getKv('unittest/testKey/two/0/name').value).to.equal(data.two[0].name);
+            expect(getKv('unittest/testKey/two/1/name').value).to.equal(data.two[1].name);
+            
+            consulClient({}).kv.get({key: 'unittest/testKey', recurse: true}, function(err, result) {
+              expect(err).to.not.exist;
+              
+              var consulResult = result.map(function(r) { return {key: r.Key, value: tryParse(r.Value)}; });
+              expect(_.sortBy(consulResult, ['key'])).to.deep.equal(_.sortBy(kvPairs, ['key']));
+              done();
+            });
+          }
+        );
+      });
+    });
+    
+    describe('pull', function() {
+      var consul;
+      
+      before(function(done) {
+        var noop      = function() {};
+        var count     = 4;
+        var complete  = function() {
+          count--;
+          if(!count) { done(); }
+        };
+        
+        consul = pmpy.consul({ prefix: 'unittest' });
+        consul.push('testKeyA',  getFixture('consul_kv_a.json')).subscribe(noop,done,complete);        
+        consul.push('testKeyB',  getFixture('consul_kv_b.json')).subscribe(noop,done,complete);        
+        consul.push('testKeyC',  getFixture('consul_kv_c.json')).subscribe(noop,done,complete);        
+        consul.push('testArray', getFixture('consul_kv_array.json')).subscribe(noop,done,complete);        
+      });
+      
+      after(clean);
+      
+      it('should pull from consul', function(done) {
+        var result, error;
+        consul.pull('testKeyA')
+          .subscribe(
+            function(val) { result = val; },
+            function(err) { error  = err; },
+            function() {
+              expect(error).to.not.exist;
+              expect(result).to.exist;
+              expect(result).to.deep.equal(getFixture('consul_kv_a.json'));
+              done();
+            }
+          );
+      });
+
+      it('should merge multiple trees together', function(done) {
+        var result, error;
+        var expected = _.merge({}, getFixture('consul_kv_a.json'), getFixture('consul_kv_b.json'));
+        consul.pull(['testKeyA','testKeyB'])
+          .subscribe(
+            function(val) { result = val; },
+            function(err) { error  = err; },
+            function() {
+              expect(error).to.not.exist;
+              expect(result).to.exist;
+              expect(result).to.deep.equal(expected);
+              done();
+            }
+          );
+      });
+
+      it('should pull arrays', function(done) {
+        var result, error;
+        var expected = getFixture('consul_kv_array.json');
+        consul.pull('testArray')
+          .subscribe(
+            function(val) { result = val; },
+            function(err) { error  = err; },
+            function() {
+              expect(error).to.not.exist;
+              expect(result).to.exist;
+              expect(result).to.deep.equal(expected);
+              done();
+            }
+          );
       });
     });
   });
