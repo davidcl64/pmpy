@@ -14,18 +14,17 @@ const obsFromArg0 = (arg) => rx.Observable.from(arg);
 
 const kvSet       = (consul) => (opts) => rx.Observable.create((observer) => {
   consul.kv.set(opts, (err) => {
-    if(err) { observer.onError(err); }
-    else {
-      observer.onNext(Object.assign({}, opts, {value: tryParse(opts.value)})); 
-    }
+    if(err) { return observer.onError(err); }
+
+    observer.onNext(Object.assign({}, opts, {value: tryParse(opts.value)})); 
     observer.onCompleted();
   });
 });
 
 const kvGet       = (consul) => (opts) => rx.Observable.create((observer) => {
   consul.kv.get(opts, (err, result) => {
-    if(err) { observer.onError(err); }
-    else if(result && result.length) { 
+    if(err) { return observer.onError(err); }
+    if(result && result.length) { 
       observer.onNext(_.map(_.merge({__prefix: opts.key}))(result)); 
     }
     observer.onCompleted();
