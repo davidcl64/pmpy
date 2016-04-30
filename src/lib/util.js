@@ -56,7 +56,7 @@ module.exports = exports = {
   env: {
     read:   readEnv,
     parse:  envParse,
-    print:  _.flow(envFlatten, _.toPairs, _.map((kv) => console.log("EXPORT %s='%s'", kv[0], JSON.stringify(kv[1]))))
+    print:  _.flow(envFlatten, _.toPairs, _.map((kv) => console.log("export %s='%s'", kv[0], JSON.stringify(kv[1]))))
   },
   
   noop:           noop,
