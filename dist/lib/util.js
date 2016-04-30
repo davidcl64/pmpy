@@ -80,7 +80,7 @@ module.exports = exports = {
     read: readEnv,
     parse: envParse,
     print: _.flow(envFlatten, _.toPairs, _.map(function (kv) {
-      return console.log("EXPORT %s='%s'", kv[0], JSON.stringify(kv[1]));
+      return console.log("export %s='%s'", kv[0], JSON.stringify(kv[1]));
     }))
   },
 

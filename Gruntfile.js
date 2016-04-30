@@ -112,6 +112,13 @@ module.exports = function (grunt) {
       pg.reset(done);
     });
   });
+  
+  grunt.registerTask('travisInit', function() {
+    var done = this.async();
+    var pg = require('./dist/lib/playground');
+    console.log("PMPY_TARGET: %s", process.env.PMPY_TARGET);
+    pg.awaitLeader(done);
+  });
 
   grunt.registerTask('cover', [
     'clean:cover',
@@ -119,5 +126,6 @@ module.exports = function (grunt) {
   ]);
   
   grunt.registerTask('default', ['jshint', 'startPlayground', 'mochacli']);
+  grunt.registerTask('travis', ['jshint', 'travisInit', 'mochacli']);
   grunt.registerTask('build', ['babel','chmod']);
 };
