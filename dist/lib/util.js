@@ -8,14 +8,8 @@ var rxJust = rx.Observable.just;
 var rxPairs = rx.Observable.pairs;
 var dotenv = require('dotenv');
 var _ = require('lodash/fp');
-var debug = require('debug')('pmpy');
 
-var trace = function trace(label) {
-  return function (val) {
-    return debug('%s: %j', label, val);
-  };
-};
-
+var noop = function noop() {};
 var jsonParse = function jsonParse(doc) {
   return JSON.parse(doc);
 };
@@ -56,6 +50,15 @@ var readEnv = function readEnv(loc) {
   return read(loc).map(envParse).map(envParseValue).map(envUnflatten);
 };
 
+var log = function _log() {
+  console.log.apply(console, arguments);
+};
+
+var logErrAndQuit = function _logErrAndQuit() {
+  console.error.apply(console, arguments);
+  process.exit(1);
+};
+
 module.exports = exports = {
   _: {
     toKV: toKV
@@ -81,9 +84,11 @@ module.exports = exports = {
     }))
   },
 
-  trace: trace,
+  noop: noop,
   tryParse: tryParse,
   flatten: flatten,
   unflatten: unflatten,
-  kvMap: kvMap
+  kvMap: kvMap,
+  log: log,
+  logErrAndQuit: logErrAndQuit
 };

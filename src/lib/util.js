@@ -8,6 +8,7 @@ const rxPairs       = rx.Observable.pairs;
 const dotenv        = require('dotenv');
 const _             = require('lodash/fp');
 
+const noop          = ()    => {};
 const jsonParse     = (doc) => JSON.parse(doc);
 const readJSON      = (loc) => read(loc).map(jsonParse);
 const toKV          = (kv)  => ({key: kv[0], value: kv[1]});
@@ -26,6 +27,16 @@ const envUnflatten  = (doc) => flat.unflatten(doc, {delimiter: '__'});
 const envParseValue = _.mapValues(tryParse);
 const envParse      = (doc) => dotenv.parse(doc);
 const readEnv       = (loc) => read(loc).map(envParse).map(envParseValue).map(envUnflatten);
+
+const log           = function _log() {
+  console.log.apply(console, arguments);
+};
+
+const logErrAndQuit = function _logErrAndQuit() {
+  console.error.apply(console, arguments);
+  process.exit(1);
+};
+
 
 module.exports = exports = {
   _: {
@@ -48,8 +59,11 @@ module.exports = exports = {
     print:  _.flow(envFlatten, _.toPairs, _.map((kv) => console.log("EXPORT %s='%s'", kv[0], JSON.stringify(kv[1]))))
   },
   
-  tryParse:   tryParse,
-  flatten:    flatten,
-  unflatten:  unflatten,
-  kvMap:      kvMap
+  noop:           noop,
+  tryParse:       tryParse,
+  flatten:        flatten,
+  unflatten:      unflatten,
+  kvMap:          kvMap,
+  log:            log,
+  logErrAndQuit:  logErrAndQuit
 };

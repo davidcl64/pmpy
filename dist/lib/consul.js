@@ -30,10 +30,10 @@ var kvSet = function kvSet(consul) {
     return rx.Observable.create(function (observer) {
       consul.kv.set(opts, function (err) {
         if (err) {
-          observer.onError(err);
-        } else {
-          observer.onNext(Object.assign({}, opts, { value: tryParse(opts.value) }));
+          return observer.onError(err);
         }
+
+        observer.onNext(Object.assign({}, opts, { value: tryParse(opts.value) }));
         observer.onCompleted();
       });
     });
@@ -45,8 +45,9 @@ var kvGet = function kvGet(consul) {
     return rx.Observable.create(function (observer) {
       consul.kv.get(opts, function (err, result) {
         if (err) {
-          observer.onError(err);
-        } else if (result && result.length) {
+          return observer.onError(err);
+        }
+        if (result && result.length) {
           observer.onNext(_.map(_.merge({ __prefix: opts.key }))(result));
         }
         observer.onCompleted();

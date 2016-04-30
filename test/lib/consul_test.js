@@ -199,22 +199,8 @@ describe('Consul', function() {
   describe('pull', function() {
     var consul;
     
-    before(function(done) {
-      var fixtures  = ['consul_kv_a.json', 'consul_kv_b.json', 'consul_kv_c.json', 'consul_kv_array.json'];
-      var noop      = function() {};
-      var count     = fixtures.length;
-      var complete  = function() {
-        count--;
-        if(!count) { done(); }
-      };
-      var subscribe = _.tap(function(observable) { observable.subscribe(noop,done,complete); });
-      
-      consul = pmpy.consul({ prefix: 'unittest' });
-      _.flow(
-        _.map(function(name) { return consul.push(name, unit.fixture(name)); }),
-        _.map(subscribe)
-      )(fixtures);
-    });
+    before(unit.seed);
+    before(function() { consul = pmpy.consul({ prefix: 'unittest' }); });
     
     after(unit.clean);
     
