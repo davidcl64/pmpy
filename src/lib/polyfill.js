@@ -1,5 +1,5 @@
 /* Contains any polyfills for es6 support that isn't available in earlier versions of node */
-if (typeof Object.assign != 'function') {
+if (typeof Object.assign !== 'function') {
   (function () {
     Object.assign = function (target) {
       'use strict';
