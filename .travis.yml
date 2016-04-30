@@ -28,5 +28,5 @@ before_install:
   - docker version
   - docker-compose version
   - cd services && docker-compose up -d
-script: npm run travis  
+script: npm install && npm run travis  
   
