@@ -51,6 +51,7 @@ const envSequence       = [vaultSecrets, parseSecrets, logSecrets];
 const restartSequence   = stopSequence.concat(startSequence);
 
 module.exports = exports = {
+  awaitLeader:  awaitLeader,
   env:          sequence(envSequence),
   reset:        sequence(resetSequence),
   restart:      sequence(restartSequence),

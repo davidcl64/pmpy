@@ -3,8 +3,10 @@
     "Access-Control-Allow-Origin": "*"
   },
   "client_addr": "0.0.0.0",
-  "datacenter": "dc1",
-  "acl_datacenter": "dc1",
+  "datacenter": "pmpy",
+  "acl_datacenter": "pmpy",
+  "acl_master_token": "pmpy_master_token",
+  "acl_token": "pmpy_master_token",
   "data_dir": "/data",
   "server": true,
   "bootstrap": true,

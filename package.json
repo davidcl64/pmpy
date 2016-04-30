@@ -15,7 +15,8 @@
     "build": "grunt build",
     "watch": "grunt watch",
     "cover": "grunt cover",
-    "test": "grunt"
+    "test": "grunt",
+    "travis": "grunt travis"
   },
   "main": "dist/lib/index.js",
   "bin": {
