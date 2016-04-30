@@ -3,6 +3,7 @@ env:
   global:
     - DOCKER_VERSION=1.11.1-0~trusty
     - DOCKER_COMPOSE_VERSION=1.6.2
+    - PMPY_TARGET=dist
 language: node_js
 node_js:
   - 'v6'
