@@ -200,10 +200,10 @@ describe('consul', function() {
           expect(code).to.be.undefined;
           expect(outErr).to.be.false;
           expect(output).to.equal(
-            "EXPORT one='\"oneB\"'\n" +
-            "EXPORT two__one='21'\n" +
-            "EXPORT two__two__one='221'\n" +
-            "EXPORT two__two__two='\"helloB\"'\n"
+            "export one='\"oneB\"'\n" +
+            "export two__one='21'\n" +
+            "export two__two__one='221'\n" +
+            "export two__two__two='\"helloB\"'\n"
           );
           
           done();

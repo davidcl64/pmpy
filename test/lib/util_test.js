@@ -92,6 +92,6 @@ describe('util', function() {
     logStub.restore();
     
     expect(logStub).to.have.been.calledOnce;
-    expect(logStub).to.have.been.calledWith('EXPORT %s=\'%s\'', 'Hello', '"World"');
+    expect(logStub).to.have.been.calledWith('export %s=\'%s\'', 'Hello', '"World"');
   });  
 });
