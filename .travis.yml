@@ -27,6 +27,6 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - docker version
   - docker-compose version
-  - cd services && docker-compose up
+  - cd services && docker-compose up -d
 script: npm run travis  
   
