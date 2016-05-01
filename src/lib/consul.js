@@ -36,8 +36,9 @@ const fullPath    = (prefix) => (path) => `${prefix}${path||''}`.replace(/\/?$/,
 
 const init = (opts) => {
   opts = opts || {};
-  
-  const consul    = consulInit(opts);
+
+  const tokenOpt  = opts['consul-token'] ? { token: opts['consul-token'] } : {};
+  const consul    = consulInit(Object.assign({}, opts, tokenOpt));
   const prefix    = (opts.prefix || 'pmpy').replace(/\/?$/, '/'); // ensure a trailing slash
   const kvSetOpts = (path)  => (kv) => ({key: `${fullPath(prefix)(path)}${kv.key}`, value: JSON.stringify(kv.value)});
   

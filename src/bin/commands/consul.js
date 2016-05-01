@@ -49,6 +49,12 @@ const buildArgs = (yargs) => {
           nargs:    1,
           global:   true,
           type:     'boolean' },
+
+        'consul-token': {
+          describe: 'ACL token',
+          nargs:    1,
+          global:   true,
+          type:     'string' }
       })
     .command(push)
     .command(pull);
