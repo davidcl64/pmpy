@@ -70,7 +70,8 @@ var fullPath = function fullPath(prefix) {
 var init = function init(opts) {
   opts = opts || {};
 
-  var consul = consulInit(opts);
+  var tokenOpt = opts['consul-token'] ? { token: opts['consul-token'] } : {};
+  var consul = consulInit(Object.assign({}, opts, tokenOpt));
   var prefix = (opts.prefix || 'pmpy').replace(/\/?$/, '/'); // ensure a trailing slash
   var kvSetOpts = function kvSetOpts(path) {
     return function (kv) {
