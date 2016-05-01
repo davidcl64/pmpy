@@ -19,6 +19,11 @@ describe('Consul', function() {
       expect(consul._.prefix, 'Should default prefix to pmpy/').to.equal('pmpy/');
       expect(consul).to.have.all.keys(['_', 'push', 'pull']);    
     });
+    
+    it('should pass along consul-token as token if provided', function() {
+      var consul = pmpy.consul({'consul-token': 'hello'});
+      expect(consul._.client._opts.token).to.equal('hello');
+    });
   });
   
   describe('utility helpers', function() {

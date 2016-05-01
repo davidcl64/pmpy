@@ -47,7 +47,13 @@ var buildArgs = function buildArgs(yargs) {
       default: false,
       nargs: 1,
       global: true,
-      type: 'boolean' }
+      type: 'boolean' },
+
+    'consul-token': {
+      describe: 'ACL token',
+      nargs: 1,
+      global: true,
+      type: 'string' }
   }).command(push).command(pull);
 };
 

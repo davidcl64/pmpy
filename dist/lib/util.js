@@ -65,7 +65,7 @@ module.exports = exports = {
   },
 
   yargs: {
-    consulOpts: _.pick(['prefix', 'host', 'port', 'secure'])
+    consulOpts: _.flow(_.pick(['prefix', 'host', 'port', 'secure', 'consul-token']), _.omitBy(_.isUndefined))
   },
 
   json: {
