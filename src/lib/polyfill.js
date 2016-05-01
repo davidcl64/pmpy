@@ -1,4 +1,6 @@
 /* Contains any polyfills for es6 support that isn't available in earlier versions of node */
+
+// Object.assign: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 if (typeof Object.assign !== 'function') {
   (function () {
     Object.assign = function (target) {
