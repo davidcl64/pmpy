@@ -6,6 +6,15 @@ dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 # Use that location as the working directory
 cd $dir
 
+if hash vboxmanage 2>/dev/null && hash docker-machine 2>/dev/null; then
+  echo "Found docker-machine an virtual box, creating a new machine (pmpy)"
+else
+  echo "Either docker-machine or virtualbox is unavailable."
+  echo "If you are running the docker beta or native, feel free to continue"
+  echo
+  exit 0
+fi
+
 # Create the docker-machine if it doesn't alread exist
 if [[ -z "$(docker-machine status pmpy)" ]] ; then
   echo 'Creating host: pmpy'
